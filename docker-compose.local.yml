@@ -1,0 +1,60 @@
+# n8n en local, para comprobar que los workflows importan y corren de verdad.
+#
+#   docker compose -f docker-compose.local.yml up -d
+#
+# No es la pila de produccion (esa lleva Caddy, dominios y TLS): aqui n8n
+# habla con el CRM que corre en el portatil con `npm run dev`. Sirve para lo
+# unico que no se puede comprobar sin n8n: que los ficheros importen sin
+# quejarse, que las expresiones se evaluen y que los disparadores salten.
+#
+# Base SQLite a proposito. En produccion va sobre Postgres porque el
+# historial de ejecuciones se corrompe con concurrencia, pero para una
+# comprobacion local anadir una base es ruido.
+
+name: agendia-local
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    ports:
+      - '5678:5678'
+    environment:
+      GENERIC_TIMEZONE: Europe/Madrid
+      TZ: Europe/Madrid
+
+      N8N_DIAGNOSTICS_ENABLED: 'false'
+      N8N_VERSION_NOTIFICATIONS_ENABLED: 'false'
+      # Sin esto, n8n avisa en cada arranque de que los permisos del fichero
+      # de configuracion son laxos y ensucia el log.
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: 'false'
+      N8N_RUNNERS_ENABLED: 'true'
+
+      # Los nodos Code leen process.env para CRM_URL y CRM_CRON_SECRET.
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: 'false'
+
+      # El CRM corre en el host, no en la red de Docker. En Docker Desktop,
+      # host.docker.internal apunta a la maquina.
+      CRM_URL: http://host.docker.internal:3000
+      CRM_CRON_SECRET: ${CRON_SECRET}
+
+      ALERT_FROM: avisos@ejemplo.local
+      ALERT_TO: avisos@ejemplo.local
+      GOOGLE_PLACES_URL: https://maps.googleapis.com/maps/api/place/details/json
+      GOOGLE_PLACE_ID: ''
+      GOOGLE_PLACES_KEY: ''
+      SHEET_FACTURAS: ''
+      SHEET_MATERIAL: ''
+      DRIVE_ENTRADA: ''
+      DRIVE_ARCHIVO: ''
+
+      EXECUTIONS_DATA_PRUNE: 'true'
+      EXECUTIONS_DATA_MAX_AGE: '72'
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    volumes:
+      - n8n_local:/home/node/.n8n
+      - ../clinicas-web/automatizaciones/workflows:/workflows:ro
+
+volumes:
+  n8n_local:
