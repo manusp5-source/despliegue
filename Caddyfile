@@ -1,0 +1,39 @@
+# Caddy saca y renueva los certificados solo. No hay que tocar nada.
+
+{$DOMINIO_CRM} {
+	reverse_proxy crm:3000
+
+	# El webhook de WhatsApp y los endpoints de integracion se autentican por
+	# secreto compartido, asi que estan expuestos a internet por necesidad.
+	# Un limite por IP evita que alguien pruebe secretos a fuerza bruta.
+	rate_limit {
+		zone integraciones {
+			match {
+				path /api/integrations/* /api/webhooks/* /api/reminders/process
+			}
+			key {remote_host}
+			events 60
+			window 1m
+		}
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	encode gzip
+}
+
+{$DOMINIO_N8N} {
+	reverse_proxy n8n:5678
+	header -Server
+}
+
+{$DOMINIO_LANGFUSE} {
+	reverse_proxy langfuse:3000
+	header -Server
+}

@@ -1,0 +1,4 @@
+# El .env lleva los secretos de una clinica real. Nunca se versiona.
+.env
+.env.*
+!.env.example
