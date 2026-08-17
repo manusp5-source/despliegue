@@ -1,5 +1,22 @@
 # Despliegue y decisiones técnicas
 
+> ## ⚠️ Esta pila está obsoleta desde el 15/08/2026
+>
+> El compose y el `Caddyfile` de esta carpeta montan `UnicornIA-CRM`, que **se
+> ha retirado** (DEC-021), sobre Caddy, que **se ha sustituido por Dokploy**
+> (DEC-022).
+>
+> **El kit vigente está en [`dokploy/`](dokploy/).** Un cliente se da de alta con:
+>
+> ```bash
+> node dokploy/alta-cliente.mjs --cliente="..." --dominio=... --pack=recepcion
+> ```
+>
+> Lo que sigue de este documento se conserva porque el razonamiento sigue siendo
+> válido —por qué tres capas de observabilidad, por qué TypeScript y no
+> LangGraph, por qué una instalación por cliente— pero **los comandos y los
+> servicios ya no**. No lo ejecutes.
+
 Cómo se pone esto en marcha en una clínica, qué se usa para vigilarlo, y por
 qué está escrito en lo que está escrito.
 

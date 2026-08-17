@@ -1,0 +1,8 @@
+# Los paquetes de alta llevan secretos en claro de instalaciones en produccion:
+# contraseñas de base de datos, claves de cifrado y la contraseña del
+# administrador de cada cliente.
+#
+# Aqui viven mientras se hace el alta. La copia buena va al gestor de
+# contraseñas, y de ahi no salen.
+clientes/
+!clientes/.gitkeep
