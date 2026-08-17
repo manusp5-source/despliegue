@@ -1,29 +1,25 @@
 # Despliegue y decisiones técnicas
 
-> ## ⚠️ Esta pila está obsoleta desde el 15/08/2026
+> ## El kit vigente es [`dokploy/`](dokploy/)
 >
-> El compose y el `Caddyfile` de esta carpeta montan `UnicornIA-CRM`, que **se
-> ha retirado** (DEC-021), sobre Caddy, que **se ha sustituido por Dokploy**
-> (DEC-022).
->
-> **El kit vigente está en [`dokploy/`](dokploy/).** Un cliente se da de alta con:
+> Un cliente se da de alta con:
 >
 > ```bash
 > node dokploy/alta-cliente.mjs --cliente="..." --dominio=... --pack=recepcion
 > ```
 >
-> Lo que sigue de este documento se conserva porque el razonamiento sigue siendo
-> válido —por qué tres capas de observabilidad, por qué TypeScript y no
-> LangGraph, por qué una instalación por cliente— pero **los comandos y los
-> servicios ya no**. No lo ejecutes.
+> La pila anterior —Caddy sobre `UnicornIA-CRM`— **se jubiló el 17/08/2026** y
+> vive en [`obsoleto/`](obsoleto/), con el porqué escrito en su `LEEME.md`:
+> `UnicornIA-CRM` se retira (DEC-021) y Caddy se sustituye por Dokploy (DEC-022).
+>
+> **Lo que sigue de este documento describe esa pila jubilada.** Se conserva
+> porque el razonamiento sigue siendo válido —por qué tres capas de
+> observabilidad, por qué TypeScript y no LangGraph, por qué una instalación por
+> cliente— pero **los comandos y los servicios ya no**. Para desplegar, ve a
+> `dokploy/`; esto es lectura, no ejecución.
 
 Cómo se pone esto en marcha en una clínica, qué se usa para vigilarlo, y por
 qué está escrito en lo que está escrito.
-
-```bash
-cp .env.example .env      # rellenar
-docker compose up -d --build
-```
 
 ---
 
@@ -196,10 +192,16 @@ internet.
 
 ### Tres bases en un solo Postgres
 
-`unicornia_crm`, `n8n` y `langfuse`, creadas por `init-db.sh`. Comparten
+La base del CRM, `n8n` y `langfuse`, creadas por `init-db.sh`. Comparten
 servidor pero no base: si el historial de n8n crece sin control o una
 migración de Langfuse sale mal, no se lleva por delante los datos de los
 pacientes, que son los únicos irrecuperables.
+
+**Esto ya no se hace así.** El kit de `dokploy/` da a cada aplicación su propio
+Postgres, y no por gusto: el chatbot y el asistente exigen
+`pgvector/pgvector:pg16` y el CRM exige `postgres:16` exacto, porque su backend
+trae `pg_dump` 16 dentro para las copias y servidor y cliente tienen que
+coincidir. Ver [`dokploy/README.md`](dokploy/README.md) → «Recursos por servidor».
 
 ### Puesta en marcha
 
@@ -223,8 +225,11 @@ minutos y comprobar que salen ejecuciones verdes cada cinco.
 Lo único irrecuperable es Postgres. MinIO conviene, Redis no importa.
 
 ```bash
-docker compose exec -T db pg_dump -U $POSTGRES_USER unicornia_crm | gzip > copia-$(date +%F).sql.gz
+docker compose exec -T db pg_dump -U $POSTGRES_USER "$POSTGRES_DB" | gzip > copia-$(date +%F).sql.gz
 ```
+
+(En la pila vigente el CRM hace sus propias copias desde Ajustes › Copias de
+seguridad, y ahí es donde hay que probar una restauración antes de entregar.)
 
 Ponlo en un cron diario fuera del servidor. **Una copia que vive en la misma
 máquina que la base no es una copia.**
