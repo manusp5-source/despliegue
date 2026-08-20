@@ -38,6 +38,14 @@ services:
       CRM_URL: http://host.docker.internal:3000
       CRM_CRON_SECRET: ${CRON_SECRET}
 
+      # El chatbot corre en su propio Docker, no en esta red. Desde dentro del
+      # contenedor de n8n, `localhost` es el propio n8n: comprobado que no
+      # alcanza. host.docker.internal si.
+      #
+      # En produccion esto es la URL publica del chatbot, y el vigilante vive
+      # en OTRA maquina: uno que viva en la que vigila se cae con ella.
+      CHATBOT_URL: http://host.docker.internal:8000
+
       ALERT_FROM: avisos@ejemplo.local
       ALERT_TO: avisos@ejemplo.local
       GOOGLE_PLACES_URL: https://maps.googleapis.com/maps/api/place/details/json
