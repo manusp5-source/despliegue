@@ -1,69 +1,74 @@
-# Pila jubilada — Caddy + UnicornIA-CRM
+# Retired stack — Caddy + UnicornIA-CRM
 
-**No ejecutes nada de esta carpeta.** Se conserva por el razonamiento, no por los
-comandos.
+**Don't run anything from this folder.** It's kept for the reasoning, not
+the commands.
 
-Jubilada el 17 de agosto de 2026, Oleada 4 del refactor del paraguas. Lo que hay
-aquí ya venía marcado como obsoleto en el `README.md` de la carpeta padre desde el
-15 de agosto; esto solo lo hace efectivo moviendo los ficheros, para que nadie
-ejecute por costumbre un `docker compose up` que apunta a un proyecto retirado.
+Retired on August 17, 2026, Wave 4 of the umbrella refactor. What's in here
+had already been marked obsolete in the parent folder's `README.md` since
+August 15; this just makes it effective by moving the files, so nobody runs
+a `docker compose up` out of habit against a retired project.
 
-## Qué hay aquí
+## What's here
 
-| Fichero | Qué era |
+| File | What it was |
 |---|---|
-| `docker-compose.yml` | La pila completa de una clínica: `crm`, `n8n`, `langfuse`, `db`, `redis`, `minio` y `proxy` |
-| `Caddyfile` | TLS automático y enrutado de los tres dominios hacia `crm:3000`, `n8n:5678` y `langfuse:3000` |
-| `init-db.sh` | Creaba las bases `unicornia_crm`, `n8n` y `langfuse` en el primer arranque. Solo lo montaba el compose de arriba |
-| `.env.example` | Las variables de esta pila (`DOMINIO_CRM`, `NEXTAUTH_SECRET`, `MINIO_USER`…). Declaraba `POSTGRES_DB=unicornia_crm`, una base que ya no existe |
+| `docker-compose.yml` | The full stack for a clinic: `crm`, `n8n`, `langfuse`, `db`, `redis`, `minio` and `proxy` |
+| `Caddyfile` | Automatic TLS and routing of the three domains to `crm:3000`, `n8n:5678` and `langfuse:3000` |
+| `init-db.sh` | Created the `unicornia_crm`, `n8n` and `langfuse` databases on first boot. Only mounted by the compose file above |
+| `.env.example` | This stack's variables (`DOMINIO_CRM`, `NEXTAUTH_SECRET`, `MINIO_USER`…). Declared `POSTGRES_DB=unicornia_crm`, a database that no longer exists |
 
-## Por qué se jubila
+## Why it was retired
 
-Dos motivos, ambos anteriores a esta oleada:
+Two reasons, both predating this wave:
 
-- **DEC-021 — `UnicornIA-CRM` se retira.** El compose construía desde
-  `../UnicornIA-CRM` (`docker-compose.yml:75`). Ese es el CRM que la decisión 1 del
-  `CLAUDE.md` del paraguas descarta en favor de `eskailet-crm`.
-- **DEC-022 — Caddy se sustituye por Dokploy.** El TLS y los dominios los gestiona
-  Traefik desde Dokploy, así que el servicio `proxy` y este `Caddyfile` sobran.
+- **DEC-021 — `UnicornIA-CRM` is retired.** The compose built from
+  `../UnicornIA-CRM` (`docker-compose.yml:75`). That's the CRM that decision
+  1 in the umbrella's `CLAUDE.md` drops in favor of `eskailet-crm`.
+- **DEC-022 — Caddy is replaced by Dokploy.** TLS and domains are managed by
+  Traefik from Dokploy, so the `proxy` service and this `Caddyfile` are no
+  longer needed.
 
-**Aviso:** `DEC-021` y `DEC-022` se citan en el `README.md` padre pero **no están
-documentadas en ningún `DECISIONS.md` del paraguas**. Una búsqueda por esos
-identificadores no devuelve nada fuera de aquí. Conviene escribirlas donde toca.
+**Note:** `DEC-021` and `DEC-022` are cited in the parent `README.md` but
+**aren't documented in any umbrella `DECISIONS.md`**. A search for those
+identifiers returns nothing outside of here. Worth writing them up where
+they belong.
 
-## Qué se usa en su lugar
+## What's used instead
 
-[`../dokploy/`](../dokploy/). Ya apunta a `eskailet-crm`
-(`alta-cliente.mjs:223` → `REPOS = { crm: 'eskailet-crm', … }`) y cubre las tres
-aplicaciones por packs.
+[`../dokploy/`](../dokploy/). It already points to `eskailet-crm`
+(`alta-cliente.mjs:223` → `REPOS = { crm: 'eskailet-crm', … }`) and covers
+all three applications via packs.
 
-## Por qué no se ha reescrito hacia `eskailet-crm`
+## Why it wasn't rewritten toward `eskailet-crm`
 
-Era la opción evidente y es la equivocada. Esta pila mete `crm`, `n8n` y
-`langfuse` en **un solo Postgres compartido**, y el kit vigente dice lo contrario
-por una razón concreta (`../dokploy/README.md:140-144`):
+It seemed like the obvious option and it's the wrong one. This stack puts
+`crm`, `n8n` and `langfuse` into **a single shared Postgres**, and the
+active kit says the opposite for a specific reason
+(`../dokploy/README.md:140-144`):
 
-> Cada aplicación lleva su propio Postgres. El chatbot y el asistente exigen
-> `pgvector/pgvector:pg16`; el CRM exige `postgres:16` exacto, porque su backend
-> trae `pg_dump` 16 dentro para las copias y servidor y cliente tienen que
-> coincidir.
+> Each application has its own Postgres. The chatbot and the assistant
+> require `pgvector/pgvector:pg16`; the CRM requires exactly `postgres:16`,
+> because its backend bundles `pg_dump` 16 for backups and server and
+> client have to match.
 
-Además `eskailet-crm` no es un servicio, son **dos** (backend Express + frontend
-nginx), así que el bloque `crm:` de este compose no le vale. Adaptarlo habría
-dejado dos pilas de despliegue que mantener en paralelo.
+Also, `eskailet-crm` isn't one service, it's **two** (Express backend +
+nginx frontend), so this compose's `crm:` block doesn't fit it. Adapting it
+would have left two deployment stacks to maintain in parallel.
 
-## Si alguna vez hay que volver
+## If we ever need to go back
 
-Los ficheros están enteros y el historial de git los sigue por el rename. Para
-recuperar la pila tal cual estaba:
+The files are intact and git history follows them through the rename. To
+recover the stack as it was:
 
 ```bash
 git log --follow -- despliegue/obsoleto/docker-compose.yml
 ```
 
-El `.env.example` se ha movido aquí con el resto: solo servía a esta pila y
-declaraba `POSTGRES_DB=unicornia_crm`. El kit vigente no lo usa — genera un `.env`
-por cliente y por aplicación con `alta-cliente.mjs`.
+The `.env.example` was moved here along with the rest: it only served this
+stack and declared `POSTGRES_DB=unicornia_crm`. The active kit doesn't use
+it — it generates a `.env` per client and per application with
+`alta-cliente.mjs`.
 
-El `.env` real de la carpeta padre sigue donde estaba y **no se versiona**
-(`.gitignore`). Si tenía secretos de una instalación viva, siguen ahí.
+The parent folder's real `.env` is still where it was and **isn't
+versioned** (`.gitignore`). If it had secrets from a live installation,
+they're still there.

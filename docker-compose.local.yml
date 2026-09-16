@@ -1,15 +1,15 @@
-# n8n en local, para comprobar que los workflows importan y corren de verdad.
+# n8n locally, to check that the workflows actually import and run.
 #
 #   docker compose -f docker-compose.local.yml up -d
 #
-# No es la pila de produccion (esa lleva Caddy, dominios y TLS): aqui n8n
-# habla con el CRM que corre en el portatil con `npm run dev`. Sirve para lo
-# unico que no se puede comprobar sin n8n: que los ficheros importen sin
-# quejarse, que las expresiones se evaluen y que los disparadores salten.
+# This is not the production stack (that one has Caddy, domains and TLS):
+# here n8n talks to the CRM running on the laptop via `npm run dev`. It's for
+# the one thing that can't be checked without n8n: that the files import
+# without complaint, that expressions evaluate, and that the triggers fire.
 #
-# Base SQLite a proposito. En produccion va sobre Postgres porque el
-# historial de ejecuciones se corrompe con concurrencia, pero para una
-# comprobacion local anadir una base es ruido.
+# SQLite database on purpose. In production it runs on Postgres because the
+# execution history gets corrupted under concurrency, but for a local check
+# adding a database would just be noise.
 
 name: agendia-local
 
@@ -25,25 +25,26 @@ services:
 
       N8N_DIAGNOSTICS_ENABLED: 'false'
       N8N_VERSION_NOTIFICATIONS_ENABLED: 'false'
-      # Sin esto, n8n avisa en cada arranque de que los permisos del fichero
-      # de configuracion son laxos y ensucia el log.
+      # Without this, n8n warns on every startup that the config file
+      # permissions are too loose and clutters the log.
       N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: 'false'
       N8N_RUNNERS_ENABLED: 'true'
 
-      # Los nodos Code leen process.env para CRM_URL y CRM_CRON_SECRET.
+      # The Code nodes read process.env for CRM_URL and CRM_CRON_SECRET.
       N8N_BLOCK_ENV_ACCESS_IN_NODE: 'false'
 
-      # El CRM corre en el host, no en la red de Docker. En Docker Desktop,
-      # host.docker.internal apunta a la maquina.
+      # The CRM runs on the host, not on Docker's network. In Docker Desktop,
+      # host.docker.internal points to the machine.
       CRM_URL: http://host.docker.internal:3000
       CRM_CRON_SECRET: ${CRON_SECRET}
 
-      # El chatbot corre en su propio Docker, no en esta red. Desde dentro del
-      # contenedor de n8n, `localhost` es el propio n8n: comprobado que no
-      # alcanza. host.docker.internal si.
+      # The chatbot runs in its own Docker setup, not on this network. From
+      # inside the n8n container, `localhost` is n8n itself: confirmed it
+      # doesn't reach it. host.docker.internal does.
       #
-      # En produccion esto es la URL publica del chatbot, y el vigilante vive
-      # en OTRA maquina: uno que viva en la que vigila se cae con ella.
+      # In production this is the chatbot's public URL, and the watchdog
+      # lives on ANOTHER machine: one that lived on the machine it's
+      # watching would go down with it.
       CHATBOT_URL: http://host.docker.internal:8000
 
       ALERT_FROM: avisos@ejemplo.local

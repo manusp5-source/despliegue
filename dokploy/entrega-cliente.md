@@ -1,103 +1,108 @@
-# Entrega al cliente
+# Client handoff
 
-Lo que se hace **antes** de decir «ya lo tenéis», y lo que se le da.
+What gets done **before** saying "it's all yours," and what gets handed
+over.
 
-La regla que ordena todo esto: **el cliente no configura nada técnico**. Si algo
-exige pegar una clave, elegir un modelo o entender qué es un webhook, lo haces
-tú antes de entregar. Lo que él toca después son textos, horarios y personas.
-
----
-
-## 1 · Checklist antes de entregar
-
-### Chatbot (pack `recepcion`)
-
-- [ ] Claves reales en `/admin/connections`: proveedor de IA y de WhatsApp
-- [ ] URLs de webhook copiadas al panel del proveedor (YCloud o Meta) — sin esto no entra ni un mensaje
-- [ ] Prompt de los **dos** agentes (texto y voz) sin ningún `[[ RELLENAR: … ]]`
-- [ ] Documentación del cliente cargada en la Base de Conocimiento
-- [ ] Prueba real: mensaje desde un móvil que no sea el tuyo, y respuesta correcta
-- [ ] Prueba de derivación: pedir hablar con una persona y comprobar que llega el aviso
-- [ ] **Guardarraíl clínico probado**: escribir un síntoma y verificar que deriva sin opinar
-- [ ] Horario de atención y mensaje de fuera de horario configurados
-
-### CRM (pack `comercial`)
-
-- [ ] Ajustes → General: logo, razón social y datos fiscales — sin esto los PDF salen en blanco
-- [ ] Ajustes → Email: SMTP probado con «Probar conexión», o Gmail conectado
-- [ ] Ajustes → IA: proveedor, clave y **tope de gasto mensual**. Sin tope, no se activa
-- [ ] Ajustes → Copias de seguridad: destino, frecuencia y **una restauración de prueba**
-- [ ] Etapas del pipeline adaptadas a su proceso, no las de fábrica
-- [ ] Catálogo cargado con sus productos o paquetes
-- [ ] Usuarios de su equipo creados con el rol que les toca
-
-### Asistente (pack `completo`)
-
-- [ ] Clave de OpenAI en Configuración → Servicios
-- [ ] Nombre y lema de la instalación
-- [ ] Integraciones que vaya a usar (Telegram, Google, Notion…) conectadas
-
-### Los tres
-
-- [ ] Contraseña del administrador **cambiada por el cliente** en el primer acceso
-- [ ] Copias de seguridad verificadas restaurando, no solo configuradas
-- [ ] Cada dominio abre por HTTPS y sin aviso del navegador
+The rule that governs all of this: **the client configures nothing
+technical**. If something requires pasting a key, choosing a model, or
+understanding what a webhook is, you do it before handing off. What they
+touch afterward is text, schedules and people.
 
 ---
 
-## 2 · Lo que se le entrega
+## 1 · Checklist before handoff
 
-| Qué | Cómo |
+### Chatbot (`recepcion` pack)
+
+- [ ] Real API keys in `/admin/connections`: AI provider and WhatsApp provider
+- [ ] Webhook URLs copied into the provider's panel (YCloud or Meta) — without this not a single message gets in
+- [ ] Both agents' prompts (text and voice) with no `[[ RELLENAR: … ]]` left
+- [ ] Client's documentation loaded into the Knowledge Base
+- [ ] Real test: message from a phone that isn't yours, and a correct reply
+- [ ] Handoff test: ask to speak to a person and confirm the alert arrives
+- [ ] **Clinical guardrail tested**: write a symptom and verify it refers without opining
+- [ ] Business hours and after-hours message configured
+
+### CRM (`comercial` pack)
+
+- [ ] Settings → General: logo, legal name and tax details — without this the PDFs come out blank
+- [ ] Settings → Email: SMTP tested with "Test connection," or Gmail connected
+- [ ] Settings → AI: provider, key and **monthly spend cap**. Without a cap, it doesn't activate
+- [ ] Settings → Backups: destination, frequency and **one test restore**
+- [ ] Pipeline stages adapted to their process, not the factory defaults
+- [ ] Catalog loaded with their products or packages
+- [ ] Their team's users created with the right roles
+
+### Assistant (`completo` pack)
+
+- [ ] OpenAI key in Settings → Services
+- [ ] Installation name and tagline
+- [ ] Integrations it will use (Telegram, Google, Notion…) connected
+
+### All three
+
+- [ ] Admin password **changed by the client** on first login
+- [ ] Backups verified by restoring, not just configured
+- [ ] Every domain opens over HTTPS with no browser warning
+
+---
+
+## 2 · What gets handed over
+
+| What | How |
 |---|---|
-| Las URL de sus aplicaciones | En el correo de entrega |
-| Usuario y contraseña | **Gestor de contraseñas**, nunca por WhatsApp ni por correo |
-| El manual de usuario | PDF del producto que haya contratado |
-| A quién escribir si algo falla | Tu canal de soporte, con el horario real |
+| The URLs of their applications | In the handoff email |
+| Username and password | **Password manager**, never over WhatsApp or email |
+| The user manual | PDF for whichever product they contracted |
+| Who to contact if something breaks | Your support channel, with real hours |
 
-**Lo que no se entrega nunca:** el código, el ZIP, el repositorio ni el `.env`.
-La licencia lo prohíbe y además no le sirve de nada. Lo que es suyo son **sus
-datos**, y esos los exporta él mismo desde la aplicación cuando quiera.
+**What never gets handed over:** the code, the ZIP, the repository or the
+`.env`. The license prohibits it, and besides it's of no use to them. What's
+theirs is **their data**, and they export that themselves from the
+application whenever they want.
 
-Conviene decirlo antes de que lo pregunten, porque lo van a preguntar. La frase
-que funciona: *«la instalación es vuestra y los datos son vuestros; el programa
-es nuestro y lo mantenemos nosotros»*.
-
----
-
-## 3 · Primeros pasos, para el cliente
-
-Esto se le manda tal cual. Cinco cosas, en este orden.
-
-> **1. Entra y cambia la contraseña.**
-> Con el usuario y la contraseña que te hemos dado. Lo primero, cambiarla desde
-> tu perfil.
->
-> **2. Mira el panel de inicio.**
-> Ahí está lo que requiere tu atención hoy. Si no hay nada, no hay nada: no
-> tienes que buscarlo.
->
-> **3. Haz una cosa de verdad.**
-> Escribe al número desde tu propio móvil y ve qué contesta. O crea un contacto
-> y una oportunidad. Toca algo real el primer día o no volverás a entrar.
->
-> **4. Dinos qué suena raro.**
-> El asistente responde con lo que le hemos enseñado de vosotros. Si contesta
-> algo que tú no dirías, mándanoslo y lo corregimos. Las dos primeras semanas
-> son de ajuste y es normal.
->
-> **5. Enséñaselo a quien lo va a usar.**
-> Quince minutos con quien coge el teléfono valen más que el manual entero.
+Worth saying before they ask, because they will ask. The line that works:
+*"the installation is yours and the data is yours; the software is ours and
+we maintain it."*
 
 ---
 
-## 4 · Las dos semanas siguientes
+## 3 · First steps, for the client
 
-| Cuándo | Qué |
+This gets sent to them as-is. Five things, in this order.
+
+> **1. Log in and change your password.**
+> Using the username and password we gave you. First thing: change it from
+> your profile.
+>
+> **2. Look at the home dashboard.**
+> That's what needs your attention today. If there's nothing there, there's
+> nothing there: you don't have to go looking for it.
+>
+> **3. Do one real thing.**
+> Text the number from your own phone and see what it replies. Or create a
+> contact and an opportunity. Touch something real on day one, or you won't
+> come back to it.
+>
+> **4. Tell us what sounds off.**
+> The assistant replies with what we've taught it about you. If it says
+> something you wouldn't say, send it to us and we'll fix it. The first two
+> weeks are for fine-tuning, and that's normal.
+>
+> **5. Show it to whoever will actually use it.**
+> Fifteen minutes with whoever answers the phone is worth more than the
+> entire manual.
+
+---
+
+## 4 · The following two weeks
+
+| When | What |
 |---|---|
-| Día 2 | Revisar las conversaciones reales y corregir el prompt con lo que haya chirriado |
-| Día 7 | Llamada de 15 minutos: qué usan, qué no y por qué |
-| Día 14 | Primer número: mensajes atendidos fuera de horario, citas agendadas, ausencias |
+| Day 2 | Review real conversations and fix the prompt based on anything that felt off |
+| Day 7 | 15-minute call: what they're using, what they're not, and why |
+| Day 14 | First number: messages handled outside business hours, appointments booked, no-shows |
 
-Ese número del día 14 es el que renueva el contrato. Sale de la propia
-aplicación, no de una estimación: por eso se promete cómo se mide antes de
-vender, y no después.
+That day-14 number is what renews the contract. It comes from the
+application itself, not an estimate: that's why how it's measured gets
+promised before the sale, not after.

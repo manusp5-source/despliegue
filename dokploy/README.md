@@ -1,77 +1,78 @@
-# Kit de alta de cliente — Dokploy
+# Client onboarding kit — Dokploy
 
-Cómo se monta una instalación nueva. Un cliente, un servidor, tres aplicaciones
-posibles. El objetivo de este kit es que dar de alta a alguien sean **cuarenta
-minutos y ningún secreto escrito a mano**.
+How a new installation gets set up. One client, one server, three possible
+applications. The goal of this kit is for onboarding someone to take
+**forty minutes and not a single secret typed by hand**.
 
 ```bash
 node alta-cliente.mjs --cliente="Clínica Dental Ejemplo" --dominio=clinicaejemplo.es --pack=recepcion
 ```
 
-Eso escribe `clientes/{slug}/` con un `.env` por aplicación —secretos ya
-generados, dominios ya escritos— y un `ALTA.md` que es el runbook de ese cliente
-concreto: qué DNS crear, qué pegar en Dokploy y qué falta antes de dar la
-entrega por buena.
+That writes `clientes/{slug}/` with a `.env` per application —secrets already
+generated, domains already filled in— and an `ALTA.md` that is that specific
+client's runbook: what DNS to create, what to paste into Dokploy, and what's
+left before the handoff can be signed off.
 
 ---
 
-## Los packs
+## The packs
 
-| Pack | Aplicaciones | Para quién | Subdominios |
+| Pack | Applications | For whom | Subdomains |
 |---|---|---|---|
-| `recepcion` | Chatbot multicanal | Clínicas. Es el producto | 3 |
-| `comercial` | CRM Agendia | Negocios con ciclo de venta B2B | 1 |
-| `completo` | Chatbot + CRM + asistente | Cliente grande, o tu propia instalación | 6 |
+| `recepcion` | Multichannel chatbot | Clinics. This is the product | 3 |
+| `comercial` | Agendia CRM | Businesses with a B2B sales cycle | 1 |
+| `completo` | Chatbot + CRM + assistant | Large client, or your own installation | 6 |
 
-Se venden por separado y se instalan por separado. Un cliente que empieza por
-`recepcion` y luego quiere el CRM no se reinstala: se le añade un servicio más en
-Dokploy, con su propio `.env`.
+They're sold separately and installed separately. A client who starts with
+`recepcion` and later wants the CRM isn't reinstalled from scratch: one more
+service is added in Dokploy, with its own `.env`.
 
 ---
 
-## Por qué Dokploy y no EasyPanel
+## Why Dokploy and not EasyPanel
 
-Las guías que traen las tres apps (`DEPLOY_EASYPANEL.md`) están escritas para
-EasyPanel, pero **no hace falta instalarlo**. Los `docker-compose.easypanel.yml`
-no publican puertos, no traen etiquetas de Traefik y no declaran redes: delegan
-el dominio y el TLS en la plataforma. Eso es exactamente lo que hace Dokploy.
+The guides that ship with all three apps (`DEPLOY_EASYPANEL.md`) are written
+for EasyPanel, but **it doesn't need to be installed**. The
+`docker-compose.easypanel.yml` files don't publish ports, don't carry Traefik
+labels, and don't declare networks: they delegate the domain and TLS to the
+platform. That's exactly what Dokploy does too.
 
-Se traduce así:
+It translates like this:
 
-| La guía dice | En Dokploy |
+| The guide says | In Dokploy |
 |---|---|
-| «Pega esto en EasyPanel → Compose» | Create → **Compose**, apuntando al repositorio |
-| «EasyPanel → Env» | Pestaña **Environment** |
-| «Asigna el Dominio a este servicio» | **Domains** → servicio + puerto |
-| «EasyPanel gestiona el TLS» | Traefik lo gestiona igual |
+| "Paste this into EasyPanel → Compose" | Create → **Compose**, pointing at the repository |
+| "EasyPanel → Env" | **Environment** tab |
+| "Assign the Domain to this service" | **Domains** → service + port |
+| "EasyPanel manages TLS" | Traefik manages it just the same |
 
-**Lo único que hay que añadir:** el servicio que lleva dominio tiene que estar en
-la red `dokploy-network` para que Traefik lo alcance. Comprueba en tu instancia
-si Dokploy la adjunta solo al asignar el dominio; si no, se declara externa en el
-compose y se añade al servicio.
-
----
-
-## Antes de la primera alta, una sola vez
-
-1. **Tres repositorios privados**, uno por aplicación: `eskailet-crm`,
-   `eskailet-chatbot`, `andria`. Dokploy construye desde el código fuente
-   (los compose usan `build:`, no imágenes publicadas), así que necesita acceso.
-
-   **Privados no es una preferencia.** La licencia de las tres prohíbe publicar
-   el código. Un repositorio público sería un incumplimiento, no un descuido.
-
-2. **Conectar el proveedor de Git** en Dokploy (GitHub App o clave de despliegue).
-
-3. **Apagar el auto-despliegue.** Si está activo, cualquier push a `main` sale a
-   producción de todos los clientes a la vez. Se despliega a mano, cliente por
-   cliente.
+**The one thing you need to add:** the service that carries a domain has to
+be on the `dokploy-network` network for Traefik to reach it. Check on your
+instance whether Dokploy attaches it automatically when the domain is
+assigned; if not, declare it as external in the compose file and add it to
+the service.
 
 ---
 
-## El alta, paso a paso
+## Before the first onboarding, once
 
-### 1 · Generar el paquete
+1. **Three private repositories**, one per application: `eskailet-crm`,
+   `eskailet-chatbot`, `andria`. Dokploy builds from source (the compose
+   files use `build:`, not published images), so it needs access.
+
+   **Private isn't a preference.** All three licenses prohibit publishing the
+   code. A public repository would be a breach, not an oversight.
+
+2. **Connect the Git provider** in Dokploy (GitHub App or deploy key).
+
+3. **Turn off auto-deploy.** If it's on, any push to `main` goes live for
+   every client at once. Deployment is done by hand, client by client.
+
+---
+
+## Onboarding, step by step
+
+### 1 · Generate the package
 
 ```bash
 node alta-cliente.mjs --cliente="Clínica Dental Ejemplo" \
@@ -81,90 +82,93 @@ node alta-cliente.mjs --cliente="Clínica Dental Ejemplo" \
                       --email=direccion@clinicaejemplo.es
 ```
 
-`--marca` es el nombre que verá el cliente dentro de la aplicación. Si no lo
-pones, se usa el nombre del cliente.
+`--marca` is the name the client will see inside the application. If you
+don't set it, the client's name is used.
 
-El script **no pisa un cliente ya dado de alta**: si la carpeta existe con
-ficheros dentro, para. Regenerar los secretos de una instalación en marcha la
-deja inaccesible y sin forma obvia de volver atrás.
+The script **never overwrites an already-onboarded client**: if the folder
+exists with files in it, it stops. Regenerating the secrets of a running
+installation leaves it inaccessible with no obvious way back.
 
 ### 2 · DNS
 
-Un registro A por subdominio a la IP del servidor, según la tabla del `ALTA.md`.
-**Antes de tocar Dokploy.** Si el DNS no ha propagado, Traefik no consigue el
-certificado y el despliegue parece roto cuando solo está esperando.
+One A record per subdomain, pointing at the server's IP, per the table in
+`ALTA.md`. **Before touching Dokploy.** If DNS hasn't propagated, Traefik
+can't get the certificate and the deployment looks broken when it's just
+waiting.
 
-### 3 · Crear el servicio en Dokploy
+### 3 · Create the service in Dokploy
 
-Por cada aplicación del pack: Compose → repositorio → `docker-compose.easypanel.yml`
-→ pegar el `.env` en Environment → asignar dominios → Deploy.
+For each application in the pack: Compose → repository →
+`docker-compose.easypanel.yml` → paste the `.env` into Environment → assign
+domains → Deploy.
 
-El primer arranque aplica todas las migraciones y siembra el administrador. En un
-servidor modesto pasa del minuto: el `start_period` del healthcheck está puesto en
-180 s justo por eso. **No lo des por fallido antes de tiempo.**
+The first boot applies all migrations and seeds the admin user. On a modest
+server that can take over a minute: the healthcheck's `start_period` is set
+to 180s for exactly that reason. **Don't call it failed too early.**
 
-### 4 · Configuración inicial dentro de cada app
+### 4 · Initial configuration inside each app
 
-Está en el `ALTA.md` del cliente y en detalle en
-[`entrega-cliente.md`](entrega-cliente.md). Lo que no se puede saltar:
+It's in the client's `ALTA.md` and in detail in
+[`entrega-cliente.md`](entrega-cliente.md). What can't be skipped:
 
-- **Chatbot:** claves reales, URLs de webhook copiadas al panel del proveedor, y
-  el prompt de los dos agentes sin marcadores `[[ RELLENAR: … ]]`.
-- **CRM:** marca y datos fiscales (sin ellos los PDF de presupuesto salen en
-  blanco) y **copias de seguridad con una restauración probada**.
-- **Asistente:** clave de OpenAI.
+- **Chatbot:** real API keys, webhook URLs copied into the provider's panel,
+  and both agents' prompts with no `[[ RELLENAR: … ]]` placeholders left.
+- **CRM:** brand and tax details (without them the quote PDFs come out
+  blank) and **backups with a tested restore**.
+- **Assistant:** OpenAI key.
 
-### 5 · Entrega
+### 5 · Handoff
 
-Checklist en [`entrega-cliente.md`](entrega-cliente.md). Las credenciales van por
-gestor de contraseñas, nunca por WhatsApp ni por correo.
+Checklist in [`entrega-cliente.md`](entrega-cliente.md). Credentials go
+through a password manager, never over WhatsApp or email.
 
 ---
 
-## Recursos por servidor
+## Resources per server
 
-Una instalación por cliente. Lo que ocupa cada pack:
+One installation per client. What each pack takes up:
 
-| Pack | Contenedores | RAM mínima | Notas |
+| Pack | Containers | Minimum RAM | Notes |
 |---|---|---|---|
-| `recepcion` | 7 | 4 GB | Postgres con pgvector, Redis, API, worker, beat, panel y MCP |
-| `comercial` | 3 | 2 GB | Postgres, backend y frontend |
-| `completo` | 13 | 8 GB | Los dos anteriores más el asistente y su Postgres |
+| `recepcion` | 7 | 4 GB | Postgres with pgvector, Redis, API, worker, beat, panel and MCP |
+| `comercial` | 3 | 2 GB | Postgres, backend and frontend |
+| `completo` | 13 | 8 GB | Both of the above plus the assistant and its Postgres |
 
-**Dos avisos que no son opinables:**
+**Two warnings that aren't up for debate:**
 
-- **El backend del CRM va a una sola réplica.** Rate-limit, sincronización de
-  Gmail, disparador de copias y cola de Calendar guardan estado en memoria del
-  proceso. Con dos réplicas esos trabajos se ejecutan por duplicado. Si se queda
-  corto, sube CPU y RAM.
-- **Cada aplicación lleva su propio Postgres.** El chatbot y el asistente exigen
-  `pgvector/pgvector:pg16`; el CRM exige `postgres:16` exacto, porque su backend
-  trae `pg_dump` 16 dentro para las copias y servidor y cliente tienen que
-  coincidir. No los unifiques en una sola instancia para ahorrar memoria: te
-  ahorra 200 MB y te cuesta las copias.
+- **The CRM backend runs on a single replica.** Rate limiting, Gmail sync,
+  the backup trigger, and the Calendar queue keep state in the process's
+  memory. With two replicas those jobs run twice over. If it's undersized,
+  scale up CPU and RAM instead.
+- **Each application has its own Postgres.** The chatbot and the assistant
+  require `pgvector/pgvector:pg16`; the CRM requires exactly `postgres:16`,
+  because its backend bundles `pg_dump` 16 for backups and server and client
+  have to match. Don't consolidate them into a single instance to save
+  memory: it saves you 200 MB and costs you your backups.
 
 ---
 
-## Los secretos, y por qué cada uno tiene su formato
+## The secrets, and why each has its own format
 
-El script los genera bien. Esto es para cuando toque diagnosticar por qué algo no
-arranca:
+The script generates them correctly. This is for when it's time to diagnose
+why something won't start:
 
-| Secreto | Formato | Qué pasa si te equivocas |
+| Secret | Format | What happens if you get it wrong |
 |---|---|---|
-| Contraseña de Postgres | **hex**, nunca base64 | Viaja dentro de la URL de conexión; `+` y `/` la parten. Síntoma: `password authentication failed` en bucle con la contraseña correcta delante |
-| `JWT_SECRET` | base64, 48 bytes | Si cambia, se cae la sesión de todo el mundo |
-| `ENCRYPTION_KEY` del CRM | base64, 32 bytes | **Si se pierde, las credenciales guardadas dentro del CRM son irrecuperables** |
-| `ENCRYPTION_KEY` del chatbot | **Fernet** (base64 URL-safe con relleno) | Con base64 normal el backend no arranca |
-| `TRUSTED_PROXY_COUNT` | `1` con Dokploy | Con `0`, el rate-limit ve siempre la IP de Traefik y limita a todos a la vez |
+| Postgres password | **hex**, never base64 | It travels inside the connection URL; `+` and `/` break it apart. Symptom: `password authentication failed` in a loop, with the correct password right there |
+| `JWT_SECRET` | base64, 48 bytes | If it changes, everyone's session gets logged out |
+| CRM `ENCRYPTION_KEY` | base64, 32 bytes | **If it's lost, the credentials stored inside the CRM are unrecoverable** |
+| Chatbot `ENCRYPTION_KEY` | **Fernet** (URL-safe base64 with padding) | With plain base64 the backend won't start |
+| `TRUSTED_PROXY_COUNT` | `1` with Dokploy | With `0`, rate limiting always sees Traefik's IP and throttles everyone at once |
 
 ---
 
-## Qué NO hay aquí
+## What's NOT here
 
-`clientes/` está en `.gitignore` y no se versiona: son secretos en claro de
-instalaciones en producción. La copia buena vive en el gestor de contraseñas.
+`clientes/` is in `.gitignore` and isn't versioned: it holds plaintext
+secrets for live production installations. The good copy lives in the
+password manager.
 
-Si pierdes un `.env` y la instalación sigue en pie, los secretos se leen desde
-Dokploy → Environment. Si pierdes los dos, hay que rotar y reintroducir las
-credenciales guardadas dentro de cada app.
+If you lose a `.env` and the installation is still up, the secrets can be
+read from Dokploy → Environment. If you lose both, the credentials stored
+inside each app need to be rotated and re-entered.

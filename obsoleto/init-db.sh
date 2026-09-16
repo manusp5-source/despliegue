@@ -1,9 +1,9 @@
 #!/bin/bash
-# Crea las bases de n8n y Langfuse la primera vez que arranca Postgres.
+# Creates the n8n and Langfuse databases the first time Postgres starts.
 #
-# Comparten servidor pero no base a proposito: si el historial de n8n crece
-# sin control o una migracion de Langfuse sale mal, no se lleva por delante
-# los datos de los pacientes, que son los unicos irrecuperables.
+# They share a server but not a database on purpose: if n8n's history grows
+# out of control or a Langfuse migration goes wrong, it doesn't take down
+# the patient data, which is the only thing that's truly unrecoverable.
 set -e
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
@@ -11,4 +11,4 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
   CREATE DATABASE langfuse;
 EOSQL
 
-echo "bases n8n y langfuse creadas"
+echo "n8n and langfuse databases created"

@@ -1,21 +1,21 @@
-# Pila completa de una clínica.
+# Full stack for a clinic.
 #
 #   docker compose --env-file .env up -d
 #
-# UNA INSTALACIÓN POR CLÍNICA. No hay separación de datos entre clínicas
-# dentro del CRM (ningún modelo lleva organizationId), así que dos clínicas
-# en la misma pila verían los datos de la otra. Es la mayor deuda pendiente
-# del producto y está documentada como DEC-D06.
+# ONE INSTALLATION PER CLINIC. There's no data separation between clinics
+# inside the CRM (no model carries organizationId), so two clinics on the
+# same stack would see each other's data. It's the product's biggest
+# outstanding debt and is documented as DEC-D06.
 #
-# Nada de esto expone puertos al exterior salvo el proxy. El CRM, n8n y
-# Langfuse hablan entre ellos por la red interna de Docker; lo que sale a
-# internet pasa por Caddy con TLS.
+# None of this exposes ports externally except the proxy. The CRM, n8n and
+# Langfuse talk to each other over Docker's internal network; what goes out
+# to the internet passes through Caddy with TLS.
 
 name: agendia
 
 services:
   # ---------------------------------------------------------------------
-  # Datos
+  # Data
   # ---------------------------------------------------------------------
   db:
     image: postgres:16-alpine
@@ -24,13 +24,14 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-      # Sin esto, un reinicio con el locale del host cambiado puede alterar
-      # el orden de los índices de texto.
+      # Without this, a restart with the host's locale changed can alter
+      # the order of the text indexes.
       LANG: es_ES.utf8
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # Crea las bases de n8n y Langfuse la primera vez. Comparten servidor
-      # pero no base: si una crece o se corrompe, no se lleva a la otra.
+      # Creates the n8n and Langfuse databases the first time. They share a
+      # server but not a database: if one grows or gets corrupted, it
+      # doesn't take the other down with it.
       - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
@@ -41,8 +42,8 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    # Persistencia activada: la cola de trabajos no debe vaciarse en un
-    # reinicio, o se pierden envíos pendientes.
+    # Persistence enabled: the job queue must not be emptied on a restart,
+    # or pending sends get lost.
     command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
@@ -68,7 +69,7 @@ services:
       retries: 5
 
   # ---------------------------------------------------------------------
-  # La aplicación
+  # The application
   # ---------------------------------------------------------------------
   crm:
     build:
@@ -93,7 +94,7 @@ services:
       REMINDER_OFFSETS_HOURS: ${REMINDER_OFFSETS_HOURS:-24,2}
 
   # ---------------------------------------------------------------------
-  # Automatizaciones
+  # Automations
   # ---------------------------------------------------------------------
   n8n:
     image: n8nio/n8n:latest
@@ -101,9 +102,9 @@ services:
     depends_on:
       db: { condition: service_healthy }
     environment:
-      # Postgres y no SQLite: con SQLite, el historial de ejecuciones se
-      # corrompe en cuanto hay concurrencia, y ese historial es justo donde
-      # se mira cuando algo no ha salido.
+      # Postgres, not SQLite: with SQLite, the execution history gets
+      # corrupted as soon as there's concurrency, and that history is
+      # exactly what you check when something didn't go right.
       DB_TYPE: postgresdb
       DB_POSTGRESDB_HOST: db
       DB_POSTGRESDB_DATABASE: n8n
@@ -116,14 +117,14 @@ services:
       GENERIC_TIMEZONE: Europe/Madrid
       TZ: Europe/Madrid
 
-      # Sin esto n8n queda abierto a quien conozca la URL.
+      # Without this n8n is left open to anyone who knows the URL.
       N8N_BASIC_AUTH_ACTIVE: 'true'
       N8N_BASIC_AUTH_USER: ${N8N_USER}
       N8N_BASIC_AUTH_PASSWORD: ${N8N_PASSWORD}
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
 
-      # Variables que usan los workflows. El CRM se llama por la red interna,
-      # no dando la vuelta por internet.
+      # Variables used by the workflows. The CRM is called over the internal
+      # network, not by going out to the internet and back.
       CRM_URL: http://crm:3000
       CRM_CRON_SECRET: ${CRON_SECRET}
       ALERT_FROM: ${ALERT_FROM}
@@ -137,27 +138,27 @@ services:
       DRIVE_ARCHIVO: ${DRIVE_ARCHIVO}
       N8N_BLOCK_ENV_ACCESS_IN_NODE: 'false'
 
-      # El historial se poda solo. Sin esto la base crece sin parar: cada
-      # ejecución del latido son 288 registros al día.
+      # History gets pruned automatically. Without this the database keeps
+      # growing forever: each heartbeat run is 288 records a day.
       EXECUTIONS_DATA_PRUNE: 'true'
-      EXECUTIONS_DATA_MAX_AGE: '336' # 14 días
+      EXECUTIONS_DATA_MAX_AGE: '336' # 14 days
     volumes:
       - n8n_data:/home/node/.n8n
-      # Los workflows quedan montados en solo lectura para poder importarlos
-      # desde la interfaz sin copiarlos a mano.
+      # Workflows are mounted read-only so they can be imported from the UI
+      # without copying them by hand.
       - ../clinicas-web/automatizaciones/workflows:/workflows:ro
 
   # ---------------------------------------------------------------------
-  # Observabilidad de la parte con IA
+  # Observability for the AI part
   # ---------------------------------------------------------------------
   #
-  # n8n ya dice si un workflow fue bien o mal. Lo que NO dice es qué le
-  # preguntó el paciente al modelo y qué contestó, y eso es justo lo que hay
-  # que poder enseñar cuando una clínica pregunta "¿qué le dijo mi asistente
-  # a este señor?".
+  # n8n already tells you whether a workflow went well or not. What it does
+  # NOT say is what the patient asked the model and what it answered, and
+  # that's exactly what needs to be shown when a clinic asks "what did our
+  # assistant tell this patient?".
   #
-  # Autoalojado a propósito: por ahí pasan mensajes de pacientes, y eso no
-  # sale de la instalación de la clínica.
+  # Self-hosted on purpose: patient messages pass through here, and that
+  # doesn't leave the clinic's installation.
   langfuse:
     image: langfuse/langfuse:2
     restart: unless-stopped
@@ -169,12 +170,12 @@ services:
       NEXTAUTH_SECRET: ${LANGFUSE_NEXTAUTH_SECRET}
       SALT: ${LANGFUSE_SALT}
       ENCRYPTION_KEY: ${LANGFUSE_ENCRYPTION_KEY}
-      # Nadie se registra solo: las cuentas las crea quien administra.
+      # Nobody self-registers: accounts are created by the admin.
       AUTH_DISABLE_SIGNUP: 'true'
       TELEMETRY_ENABLED: 'false'
 
   # ---------------------------------------------------------------------
-  # Entrada
+  # Entry point
   # ---------------------------------------------------------------------
   proxy:
     image: caddy:2-alpine

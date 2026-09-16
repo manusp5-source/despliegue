@@ -1,8 +1,8 @@
-# Los paquetes de alta llevan secretos en claro de instalaciones en produccion:
-# contraseñas de base de datos, claves de cifrado y la contraseña del
-# administrador de cada cliente.
+# The onboarding packages carry plaintext secrets for production
+# installations: database passwords, encryption keys and each client's
+# admin password.
 #
-# Aqui viven mientras se hace el alta. La copia buena va al gestor de
-# contraseñas, y de ahi no salen.
+# They live here while the onboarding is happening. The good copy goes to
+# the password manager, and doesn't leave it from there.
 clientes/
 !clientes/.gitkeep
